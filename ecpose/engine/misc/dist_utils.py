@@ -72,6 +72,23 @@ def init_distributed_mode(args):
     print("End torch.distributed.barrier()")
     setup_for_distributed(args.rank == 0)
 
+def _accelerator_module():
+    """Return the active accelerator module (torch.xpu or torch.cuda), or None on CPU-only setups."""
+    if getattr(torch, 'xpu', None) is not None and torch.xpu.is_available():
+        return torch.xpu
+    if torch.cuda.is_available():
+        return torch.cuda
+    return None
+
+
+def current_device() -> str:
+    """Return the device type string ('xpu', 'cuda' or 'cpu') for the active accelerator."""
+    accelerator = _accelerator_module()
+    if accelerator is None:
+        return 'cpu'
+    return accelerator.__name__.rsplit('.', 1)[-1]
+
+
 def setup_distributed(print_rank: int=0, print_method: str='builtin', seed: int=None, ):
     """
     env setup
@@ -91,8 +108,10 @@ def setup_distributed(print_rank: int=0, print_method: str='builtin', seed: int=
         torch.distributed.barrier()
 
         rank = torch.distributed.get_rank()
-        torch.cuda.set_device(rank)
-        torch.cuda.empty_cache()
+        accelerator = _accelerator_module()
+        if accelerator is not None:
+            accelerator.set_device(rank)
+            accelerator.empty_cache()
         enabled_dist = True
         if get_rank() == print_rank:
             print('Initialized distributed mode...')

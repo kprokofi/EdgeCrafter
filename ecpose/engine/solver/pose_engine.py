@@ -28,7 +28,7 @@ def train_one_epoch(self_lr_scheduler,
                     warmup_scheduler=None,
                     ema=None,
                     args=None):
-    scaler = torch.amp.GradScaler(str(device), enabled=True) # FIXME
+    scaler = torch.amp.GradScaler(device.type, enabled=True)
     model.train()
     criterion.train()
     metric_logger = utils.MetricLogger(delimiter="  ")
@@ -61,10 +61,10 @@ def train_one_epoch(self_lr_scheduler,
             new_samples = new_samples.to(device)
             new_targets = [{k: v.to(device) for k, v in t.items()} for t in targets[start_idx:final_idx]]
 
-            with torch.amp.autocast(str(device), enabled=True):
+            with torch.amp.autocast(device.type, enabled=True):
                 outputs = model(new_samples, new_targets)
             
-            with torch.amp.autocast(str(device), enabled=False):
+            with torch.amp.autocast(device.type, enabled=False):
                 loss_dict = criterion(outputs, new_targets)
                 losses = sum(loss_dict.values())
 
@@ -119,9 +119,11 @@ def train_one_epoch(self_lr_scheduler,
                 writer.add_scalar(f'Lr/pg_{j}', pg['lr'], global_step)
             for k, v in loss_dict_reduced.items():
                 writer.add_scalar(f'Loss/{k}', v.item(), global_step)
-            free, total = torch.cuda.mem_get_info(device)
-            mem_used_MB = (total - free) / GIGABYTE
-            writer.add_scalar('Info/memory',  mem_used_MB, global_step)
+            accelerator = getattr(torch, dist_utils.current_device(), None)
+            if accelerator is not None and hasattr(accelerator, 'mem_get_info'):
+                free, total = accelerator.mem_get_info(device)
+                mem_used_MB = (total - free) / GIGABYTE
+                writer.add_scalar('Info/memory',  mem_used_MB, global_step)
 
         optimizer.zero_grad()
 

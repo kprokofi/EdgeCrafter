@@ -44,6 +44,22 @@
 pip install -r requirements.txt
 ```
 
+### Intel XPU（Intel 集成显卡 / 独立显卡）
+EdgeCrafter 通过 PyTorch 的 `torch.xpu` 后端支持 Intel 集成显卡和独立显卡。请先按照 [PyTorch 官方 XPU 安装说明](https://docs.pytorch.org/docs/stable/notes/get_start_xpu.html) 安装支持 XPU 的 PyTorch，然后安装其余依赖：
+
+```bash
+pip install torch torchvision --index-url https://download.pytorch.org/whl/xpu
+pip install -r requirements.txt
+```
+
+验证 XPU 是否可用：
+
+```bash
+python xpu_debug.py --variant ecdetseg --device xpu
+```
+
+使用 `-d xpu` 选项运行推理或训练。
+
 ### ⚡ 快速开始（推理示例）
 测试 EdgeCrafter 最直接的方法是使用预训练模型对示例图像进行推理。
 ```bash
@@ -290,6 +306,8 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 torchrun --standalone --nproc_per_node=4 \
   # 分割
   python tools/inference/onnx_inf.py -o ecseg_{SIZE}.onnx -i example.jpg
   ```
+
+  ONNX 推理目前仅支持 CUDA 和 CPU；ONNX Runtime 未提供 XPU 执行提供程序。
 
 - **导出工具**
 

@@ -407,7 +407,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="EdgeCrafter ONNX Inference")
     parser.add_argument("--onnx", "-o", required=True, help="Path to ONNX model file")
     parser.add_argument("--input", "-i", required=True, help="Image path, image directory path, or video path")
-    parser.add_argument("--device", "-d", default="cuda", choices=["cuda", "cpu"], help="Device to run inference on")
+    parser.add_argument(
+        "--device", "-d", default="cuda", choices=["cuda", "cpu"],
+        help="Device to run ONNX inference on; XPU is not supported by ONNX Runtime",
+    )
     parser.add_argument("--thresh", type=float, default=0.4, help="Score threshold")
     parser.add_argument("-b", "--batch-size", type=int, default=8, help="Batch size for ONNX video inference")
     parser.add_argument("--num-workers", type=int, default=4, help="Thread workers for video draw/write")
