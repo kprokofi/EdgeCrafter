@@ -69,6 +69,7 @@ The easiest way to test EdgeCrafter is to run inference on a sample image using 
 wget https://github.com/capsule2077/edgecrafter/releases/download/edgecrafterv1/ecdet_l.pth
 # 2. Run PyTorch inference
 # Make sure to replace `path/to/your/image.jpg` with an actual image path
+# Add the "-d cuda / xpu / cpu" option to select the device
 python tools/inference/torch_inf.py -c configs/ecdet/ecdet_l.yml -r ecdet_l.pth -i path/to/your/image.jpg
 ```
 

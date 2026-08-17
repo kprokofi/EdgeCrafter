@@ -10,6 +10,7 @@ import torch
 
 from ..misc import dist_utils
 from ..misc import logger as utils
+from ..optim.amp import GradScaler
 
 GIGABYTE = 1024 ** 3
 
@@ -28,7 +29,7 @@ def train_one_epoch(self_lr_scheduler,
                     warmup_scheduler=None,
                     ema=None,
                     args=None):
-    scaler = torch.amp.GradScaler(device.type, enabled=True)
+    scaler = GradScaler(device=device.type, enabled=args.use_amp)
     model.train()
     criterion.train()
     metric_logger = utils.MetricLogger(delimiter="  ")
@@ -61,7 +62,7 @@ def train_one_epoch(self_lr_scheduler,
             new_samples = new_samples.to(device)
             new_targets = [{k: v.to(device) for k, v in t.items()} for t in targets[start_idx:final_idx]]
 
-            with torch.amp.autocast(device.type, enabled=True):
+            with torch.amp.autocast(device.type, enabled=args.use_amp):
                 outputs = model(new_samples, new_targets)
             
             with torch.amp.autocast(device.type, enabled=False):

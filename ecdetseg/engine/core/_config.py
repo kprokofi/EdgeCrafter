@@ -183,8 +183,10 @@ class BaseConfig(object):
 
     @property
     def scaler(self) -> GradScaler:
-        if self._scaler is None and self.use_amp and torch.cuda.is_available():
-            self._scaler = GradScaler()
+        if self._scaler is None and self.use_amp:
+            from ..optim.amp import GradScaler as DeviceGradScaler
+
+            self._scaler = DeviceGradScaler()
         return self._scaler
 
     @scaler.setter

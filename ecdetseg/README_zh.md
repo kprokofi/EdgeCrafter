@@ -67,6 +67,7 @@ python xpu_debug.py --variant ecdetseg --device xpu
 wget https://github.com/capsule2077/edgecrafter/releases/download/edgecrafterv1/ecdet_l.pth
 # 2. 运行 PyTorch 推理
 # 请将 `path/to/your/image.jpg` 替换为实际图像路径
+# 添加 "-d cuda / xpu / cpu" 选项以选择设备
 python tools/inference/torch_inf.py -c configs/ecdet/ecdet_l.yml -r ecdet_l.pth -i path/to/your/image.jpg
 ```
 
@@ -306,8 +307,6 @@ CUDA_VISIBLE_DEVICES=0,1,2,3 torchrun --standalone --nproc_per_node=4 \
   # 分割
   python tools/inference/onnx_inf.py -o ecseg_{SIZE}.onnx -i example.jpg
   ```
-
-  ONNX 推理目前仅支持 CUDA 和 CPU；ONNX Runtime 未提供 XPU 执行提供程序。
 
 - **导出工具**
 

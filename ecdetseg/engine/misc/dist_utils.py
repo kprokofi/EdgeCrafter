@@ -156,9 +156,15 @@ def warp_model(
         rank = get_rank()
         model = nn.SyncBatchNorm.convert_sync_batchnorm(model) if sync_bn else model
         if dist_mode == 'dp':
+            if current_device() != 'cuda':
+                raise RuntimeError('DataParallel is only supported for CUDA; use DDP for XPU.')
             model = DP(model, device_ids=[rank], output_device=rank)
         elif dist_mode == 'ddp':
-            model = DDP(model, device_ids=[rank], output_device=rank, find_unused_parameters=find_unused_parameters)
+            if current_device() == 'cuda':
+                model = DDP(model, device_ids=[rank], output_device=rank,
+                            find_unused_parameters=find_unused_parameters)
+            else:
+                model = DDP(model, device_ids=None, find_unused_parameters=find_unused_parameters)
         else:
             raise AttributeError('')
 
